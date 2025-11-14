@@ -7,4 +7,4 @@ RUN go build
 
 RUN CGO_ENABLED=1 GOOS=linux go build -o tic_tac_toe.fun
 
-CMD ["./log_output"]
+CMD ["./log_output", "read"]
