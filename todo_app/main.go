@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,15 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.LoadHTMLGlob("front/*")
+
+	router.GET("/", HandleGetHome())
 
 	router.Run(":"+env_port)
+}
+
+func HandleGetHome() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.HTML(http.StatusOK, "home.html", gin.H{})
+	}
 }
