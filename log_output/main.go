@@ -1,9 +1,11 @@
 package main
 
 import (
-	"log"
 	"math/rand"
+	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -17,9 +19,16 @@ func randSeq(n int) string {
 }
 
 func main() {
-	str := randSeq(10)
-	for {
-		log.Println(str)
-		time.Sleep(5 * time.Second)
+	random_str := randSeq(10)
+
+	router := gin.Default()
+	router.GET("/", HandleGetHome(random_str))
+
+	router.Run(":3000")
+}
+
+func HandleGetHome(status string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.String(http.StatusOK, time.Now().Format(time.UnixDate) + "\t\t" + status)
 	}
 }
