@@ -11,6 +11,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var volume_path = "/usr/src/app/files/"
+var log_file_name = "log.txt"
+var pong_file_name = "pongs.txt"
+
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func randSeq(n int) string {
@@ -29,17 +33,14 @@ func main() {
 
 	args := all_args[1:]
 
-	volume_path := "/usr/src/app/files"
-	log_file_name := "log.txt"
-
 	if args[0] == "gen" {
-		genFunc(volume_path, log_file_name)
+		genFunc()
 	} else {
-		readFunc(volume_path, log_file_name)
+		readFunc()
 	}
 }
 
-func genFunc(volume_path, log_file_name string) {
+func genFunc() {
 	random_str := randSeq(10)
 
 	for {
@@ -52,7 +53,7 @@ func genFunc(volume_path, log_file_name string) {
 	}
 }
 
-func readFunc(volume_path, log_file_name string) {
+func readFunc() {
 	router := gin.Default()
 	router.GET("/", HandleGetHome(volume_path, log_file_name))
 
@@ -67,6 +68,13 @@ func HandleGetHome(volume_path, log_file_name string) func(c *gin.Context) {
 			panic(err)
 		}
 
-		c.String(http.StatusOK, string(contents))
+		pong_output, err := os.ReadFile(filepath.Join(volume_path, pong_file_name))
+		if err != nil {
+			panic(err)
+		}
+
+		res_string := string(contents) + "\nPing pongs: " + string(pong_output)
+
+		c.String(http.StatusOK, res_string)
 	}
 }

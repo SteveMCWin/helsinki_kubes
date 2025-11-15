@@ -14,15 +14,16 @@ spec:
     spec:
       volumes:
         - name: logs
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: logoutput-claim
       containers:
         - name: gen-log-output
-          image: stevemcwin/gen-log-output:latest
+          image: stevemcwin/gen-log-output
           volumeMounts:
             - name: logs
               mountPath: /usr/src/app/files
         - name: read-log-output
-          image: stevemcwin/read-log-output:latest
+          image: stevemcwin/read-log-output
           volumeMounts:
             - name: logs
               mountPath: /usr/src/app/files
