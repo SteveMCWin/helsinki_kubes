@@ -21,14 +21,29 @@
             min-height: 100vh;
         }
         
+        div {
+            text-align: center;
+        }
+        
         h1 {
             font-size: 3rem;
             color: #ff79c6;
-            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        img {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 <body>
-    <h1>Hello Helsinki :D</h1>
+    <div>
+        <h1>Hello Helsinke :D</h1>
+        <img src="{{ .photo }}" alt="Photo">
+    </div>
 </body>
 </html>

@@ -12,6 +12,14 @@ spec:
       labels:
         app: pingpong
     spec:
+      volumes:
+        - name: logs
+          persistentVolumeClaim:
+            claimName: logoutput-claim
       containers:
         - name: pingpong
           image: stevemcwin/ping-pong:latest
+          volumeMounts:
+            - name: logs
+              mountPath: /usr/src/app/files
+

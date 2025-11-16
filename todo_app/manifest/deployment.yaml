@@ -12,9 +12,16 @@ spec:
       labels:
         app: todoapp
     spec:
+      volumes:
+        - name: todo-storage
+          persistentVolumeClaim:
+            claimName: todo-claim
       containers:
         - name: logoutput
           image: stevemcwin/todo-app
+          volumeMounts:
+            - name: todo-storage
+              mountPath: /usr/src/app/files
           env:
             - name: PORT
               value: "3000"
