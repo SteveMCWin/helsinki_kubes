@@ -1,21 +1,23 @@
 package main
 
 import (
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
-	"path/filepath"
+	// "path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-var volume_path = "/usr/src/app/files/"
-var log_file_name = "log.txt"
-var pong_file_name = "pongs.txt"
+// var volume_path = "/usr/src/app/files/"
+// var log_file_name = "log.txt"
+// var pong_file_name = "pongs.txt"
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+var genContents string
 
 func randSeq(n int) string {
     b := make([]rune, n)
@@ -36,6 +38,19 @@ func main() {
 	if args[0] == "gen" {
 		genFunc()
 	} else {
+		go func() {
+			random_str := randSeq(10)
+
+			for {
+				// to_write := time.Now().Format(time.UnixDate) + "\t\t" + random_str
+				genContents = time.Now().Format(time.UnixDate) + "\t\t" + random_str
+				// err := os.WriteFile(filepath.Join(volume_path, log_file_name), []byte(to_write), 0666)
+				// if err != nil {
+				// 	panic(err)
+				// }
+				time.Sleep(5 * time.Second)
+			}
+		}()
 		readFunc()
 	}
 }
@@ -44,36 +59,48 @@ func genFunc() {
 	random_str := randSeq(10)
 
 	for {
-		to_write := time.Now().Format(time.UnixDate) + "\t\t" + random_str
-		err := os.WriteFile(filepath.Join(volume_path, log_file_name), []byte(to_write), 0666)
-		if err != nil {
-			panic(err)
-		}
+		// to_write := time.Now().Format(time.UnixDate) + "\t\t" + random_str
+		genContents = time.Now().Format(time.UnixDate) + "\t\t" + random_str
+		// err := os.WriteFile(filepath.Join(volume_path, log_file_name), []byte(to_write), 0666)
+		// if err != nil {
+		// 	panic(err)
+		// }
 		time.Sleep(5 * time.Second)
 	}
 }
 
 func readFunc() {
 	router := gin.Default()
-	router.GET("/", HandleGetHome(volume_path, log_file_name))
+	router.GET("/", HandleGetHome())
 
 	router.Run(":3000")
 }
 
-func HandleGetHome(volume_path, log_file_name string) func(c *gin.Context) {
+func HandleGetHome() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		log.Println("Called handle get home")
-		contents, err := os.ReadFile(filepath.Join(volume_path, log_file_name))
+		// contents, err := os.ReadFile(filepath.Join(volume_path, log_file_name))
+		// if err != nil {
+		// 	panic(err)
+		// }
+		//
+		// pong_output, err := os.ReadFile(filepath.Join(volume_path, pong_file_name))
+		// if err != nil {
+		// 	panic(err)
+		// }
+
+		res, err := http.Get("http://pingpong-svc:3456/pings")
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+
+		resBytes, err := io.ReadAll(res.Body)
 		if err != nil {
 			panic(err)
 		}
 
-		pong_output, err := os.ReadFile(filepath.Join(volume_path, pong_file_name))
-		if err != nil {
-			panic(err)
-		}
-
-		res_string := string(contents) + "\nPing pongs: " + string(pong_output)
+		res_string := genContents + "\nPing pongs: " + string(resBytes)
 
 		c.String(http.StatusOK, res_string)
 	}

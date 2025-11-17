@@ -20,4 +20,3 @@ spec:
             name: pingpong-svc
             port:
               number: 3456
-
