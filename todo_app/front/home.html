@@ -23,6 +23,7 @@
         
         div {
             text-align: center;
+            max-width: 800px;
         }
         
         h1 {
@@ -37,6 +38,58 @@
             height: auto;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+        }
+        
+        .todo-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        input {
+            flex: 1;
+            padding: 12px;
+            background-color: #44475a;
+            border: 2px solid #6272a4;
+            border-radius: 4px;
+            color: #f8f8f2;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background-color: #ff79c6;
+            border: none;
+            border-radius: 4px;
+            color: #282a36;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background-color: #ff92df;
+        }
+        
+        .todo-list {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .todo-item {
+            padding: 12px;
+            background-color: #44475a;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .todo-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
         }
     </style>
 </head>
@@ -44,6 +97,17 @@
     <div>
         <h1>Hello Helsinke :D</h1>
         <img src="{{ .photo }}" alt="Photo">
+
+        <div class="todo-input">
+            <input type="text" maxlength="140" placeholder="Enter a todo (max 140 characters)">
+            <button>Send</button>
+        </div>
+        
+        <ul class="todo-list">
+            {{ range .todoItems }}
+            <li class="todo-item {{ if .Completed }}completed{{ end }}">{{ .Name }}</li>
+            {{ end }}
+        </ul>
     </div>
 </body>
 </html>
