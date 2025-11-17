@@ -27,4 +27,3 @@ spec:
           volumeMounts:
             - name: logs
               mountPath: /usr/src/app/files
-

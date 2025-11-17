@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -49,13 +51,7 @@ func main() {
 	router.LoadHTMLGlob("front/*")
 	router.Static("/files", "./files")
 
-	todoItems := []TodoItem{
-		TodoItem{Name: "Clean my room", Completed: true},
-		TodoItem{Name: "Learn k8s"},
-		TodoItem{Name: "Call mom"},
-	}
-
-	router.GET("/", HandleGetHome(todoItems))
+	router.GET("/", HandleGetHome())
 
 	router.Run(":" + env_port)
 }
@@ -85,8 +81,23 @@ func getAndStoreImage() {
 	fmt.Println("Stored image!")
 }
 
-func HandleGetHome(items []TodoItem) func(c *gin.Context) {
+func HandleGetHome() func(c *gin.Context) {
 	return func(c *gin.Context) {
+		res, err := http.Get("http://todo-backend-svc:5432/todos")
+		if err != nil {
+			panic(err)
+		}
+		defer res.Body.Close()
+
+		var items []TodoItem
+
+		err = json.NewDecoder(res.Body).Decode(&items)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Println("Len of item list: ", len(items))
+
 		c.HTML(http.StatusOK, "home.html", gin.H{"photo": "/files/" + image_name, "todoItems": items})
 	}
 }

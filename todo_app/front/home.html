@@ -99,8 +99,8 @@
         <img src="{{ .photo }}" alt="Photo">
 
         <div class="todo-input">
-            <input type="text" maxlength="140" placeholder="Enter a todo (max 140 characters)">
-            <button>Send</button>
+            <input id="todo-input" type="text" name="todo" maxlength="140" placeholder="Enter a todo (max 140 characters)">
+            <button id="todo-send">Send</button>
         </div>
         
         <ul class="todo-list">
@@ -109,5 +109,29 @@
             {{ end }}
         </ul>
     </div>
+
+    <script>
+    document.getElementById("todo-send").addEventListener("click", async () => {
+        const todoValue = document.getElementById("todo-input").value;
+
+        if (!todoValue) return;
+
+        const res = await fetch("http://localhost:8081/todos", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                todo: todoValue
+            })
+        });
+
+        if (res.ok) {
+            console.log("Todo sent!");
+        } else {
+            console.error("Failed to send todo");
+        }
+    });
+    </script>
 </body>
 </html>
