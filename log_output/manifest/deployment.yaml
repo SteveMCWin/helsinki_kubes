@@ -15,16 +15,29 @@ spec:
     spec:
       volumes:
         - name: logs
-          persistentVolumeClaim:
-            claimName: logoutput-claim
+          # persistentVolumeClaim:
+          #   claimName: logoutput-claim
+          configMap:
+            name: myconfig
+            items:
+              - key:  "information.txt"
+                path: "information.txt"
       containers:
         - name: gen-log-output
           image: stevemcwin/gen-log-output
           volumeMounts:
             - name: logs
               mountPath: /usr/src/app/files
+
         - name: read-log-output
           image: stevemcwin/read-log-output
           volumeMounts:
             - name: logs
               mountPath: /usr/src/app/files
+          env:
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: myconfig
+                  key: message
+

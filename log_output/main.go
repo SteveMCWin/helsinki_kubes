@@ -6,15 +6,17 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
+
 	// "path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// var volume_path = "/usr/src/app/files/"
-// var log_file_name = "log.txt"
-// var pong_file_name = "pongs.txt"
+var volume_path = "/usr/src/app/files/"
+var config_file_name = "information.txt"
+var pong_file_name = "pongs.txt"
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 var genContents string
@@ -79,15 +81,12 @@ func readFunc() {
 func HandleGetHome() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		log.Println("Called handle get home")
-		// contents, err := os.ReadFile(filepath.Join(volume_path, log_file_name))
-		// if err != nil {
-		// 	panic(err)
-		// }
-		//
-		// pong_output, err := os.ReadFile(filepath.Join(volume_path, pong_file_name))
-		// if err != nil {
-		// 	panic(err)
-		// }
+		config_contents, err := os.ReadFile(filepath.Join(volume_path, config_file_name))
+		if err != nil {
+			panic(err)
+		}
+
+		config_msg := os.Getenv("MESSAGE")
 
 		res, err := http.Get("http://pingpong-svc:3456/pings")
 		if err != nil {
@@ -100,7 +99,11 @@ func HandleGetHome() func(c *gin.Context) {
 			panic(err)
 		}
 
-		res_string := genContents + "\nPing pongs: " + string(resBytes)
+		res_string := 
+			"this is read from a file: " + string(config_contents) +
+			"\nenv variable: " + config_msg +
+			"\n" + genContents + 
+			"\nPing pongs: " + string(resBytes)
 
 		c.String(http.StatusOK, res_string)
 	}
