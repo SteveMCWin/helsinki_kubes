@@ -25,4 +25,27 @@ spec:
               mountPath: /usr/src/app/files
           env:
             - name: PORT
-              value: "3000"
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-config
+                  key: port
+            - name: PICTURE_SOURCE
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-config
+                  key: picture-source
+            - name: PICTURE_WIDTH
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-config
+                  key: picture-width
+            - name: PICTURE_HEIGHT
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-config
+                  key: picture-height
+            - name: BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-config
+                  key: backend-url

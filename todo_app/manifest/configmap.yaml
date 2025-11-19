@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-config
+  namespace: project
+data:
+  port: ":3000"
+  picture-source: "https://picsum.photos" 
+  picture-width: "800"
+  picture-height: "600"
+  backend-url: "http://todo-backend-svc:5432/todos"
+

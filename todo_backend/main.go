@@ -19,7 +19,7 @@ func main() {
 
 	env_port := os.Getenv("BACKENDPORT")
 	if env_port == "" {
-		env_port = "8080"
+		env_port = ":8080"
 	}
 
 	router := gin.Default()
@@ -33,7 +33,7 @@ func main() {
 	router.GET("/todos", HandleGetTodos())
 	router.POST("/todos", HandlePostTodos())
 
-	router.Run(":" + env_port)
+	router.Run(env_port)
 }
 
 func HandleGetTodos() func(c *gin.Context) {

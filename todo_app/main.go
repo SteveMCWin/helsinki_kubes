@@ -37,7 +37,7 @@ func main() {
 
 	env_port := os.Getenv("PORT")
 	if env_port == "" {
-		env_port = "8080"
+		env_port = ":8080"
 	}
 
 	go func() {
@@ -53,12 +53,19 @@ func main() {
 
 	router.GET("/", HandleGetHome())
 
-	router.Run(":" + env_port)
+	router.Run(env_port)
 }
 
 func getAndStoreImage() {
-	url := "https://picsum.photos/600/400"
 
+	//"https://picsum.photos" 
+	env_pic_source := os.Getenv("PICTURE_SOURCE")
+	env_width  := os.Getenv("PICTURE_WIDTH")
+	env_height := os.Getenv("PICTURE_HEIGHT")
+
+	url := env_pic_source + "/" + env_width + "/" + env_height
+
+	// log.Println("URL: ", url)
 	response, e := http.Get(url)
 	if e != nil {
 		panic(e)
@@ -83,7 +90,9 @@ func getAndStoreImage() {
 
 func HandleGetHome() func(c *gin.Context) {
 	return func(c *gin.Context) {
-		res, err := http.Get("http://todo-backend-svc:5432/todos")
+		//"http://todo-backend-svc:5432/todos"
+		backend_url := os.Getenv("BACKEND_URL")
+		res, err := http.Get(backend_url)
 		if err != nil {
 			panic(err)
 		}
