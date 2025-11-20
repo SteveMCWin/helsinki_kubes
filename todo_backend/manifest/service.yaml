@@ -8,6 +8,6 @@ spec:
   selector:
     app: todobackend
   ports:
-    - port: 5432
+    - port: 6789
       protocol: TCP
       targetPort: 8080

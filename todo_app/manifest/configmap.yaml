@@ -8,5 +8,5 @@ data:
   picture-source: "https://picsum.photos" 
   picture-width: "800"
   picture-height: "600"
-  backend-url: "http://todo-backend-svc:5432/todos"
+  backend-url: "http://todo-backend-svc:6789/todos"
 

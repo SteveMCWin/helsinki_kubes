@@ -10,16 +10,12 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/stevemcwin/helsinki_kubes/todo_backend/data"
 	"github.com/gin-gonic/gin"
 )
 
 var volume_path = "/usr/src/app/files/"
 var image_name = "myimg.jpg"
-
-type TodoItem struct {
-	Name      string
-	Completed bool
-}
 
 func main() {
 
@@ -90,7 +86,6 @@ func getAndStoreImage() {
 
 func HandleGetHome() func(c *gin.Context) {
 	return func(c *gin.Context) {
-		//"http://todo-backend-svc:5432/todos"
 		backend_url := os.Getenv("BACKEND_URL")
 		res, err := http.Get(backend_url)
 		if err != nil {
@@ -98,7 +93,7 @@ func HandleGetHome() func(c *gin.Context) {
 		}
 		defer res.Body.Close()
 
-		var items []TodoItem
+		var items []data.TodoItem
 
 		err = json.NewDecoder(res.Body).Decode(&items)
 		if err != nil {
