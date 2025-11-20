@@ -16,7 +16,6 @@ import (
 
 var volume_path = "/usr/src/app/files/"
 var config_file_name = "information.txt"
-var pong_file_name = "pongs.txt"
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 var genContents string

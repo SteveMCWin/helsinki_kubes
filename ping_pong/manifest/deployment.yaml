@@ -13,14 +13,20 @@ spec:
       labels:
         app: pingpong
     spec:
-      volumes:
-        - name: logs
-          persistentVolumeClaim:
-            claimName: logoutput-claim
       containers:
         - name: pingpong
           image: stevemcwin/ping-pong:latest
-          volumeMounts:
-            - name: logs
-              mountPath: /usr/src/app/files
-
+          env:
+            - name: DB_HOST
+              value: postgres-svc
+            - name: DB_NAME
+              value: pingpongdb
+            - name: DB_USER
+              value: pingpong
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
