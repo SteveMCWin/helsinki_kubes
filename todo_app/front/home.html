@@ -87,9 +87,54 @@
             gap: 10px;
         }
         
-        .todo-item.completed {
+        .todo-item.completed .todo-text {
             opacity: 0.6;
             text-decoration: line-through;
+        }
+        
+        .todo-text {
+            flex: 1;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 2px;
+        }
+        
+        .todo-text:hover {
+            background-color: #6272a4;
+        }
+        
+        .todo-text-input {
+            flex: 1;
+            padding: 4px;
+            background-color: #6272a4;
+            border: 2px solid #ff79c6;
+            border-radius: 2px;
+            color: #f8f8f2;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        .toggle-btn {
+            padding: 6px 12px;
+            background-color: #50fa7b;
+            border: none;
+            border-radius: 4px;
+            color: #282a36;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .toggle-btn:hover {
+            background-color: #5fff85;
+        }
+        
+        .todo-item.completed .toggle-btn {
+            background-color: #ffb86c;
+        }
+        
+        .todo-item.completed .toggle-btn:hover {
+            background-color: #ffc57f;
         }
     </style>
 </head>
@@ -105,31 +150,201 @@
         
         <ul class="todo-list">
             {{ range .todoItems }}
-            <li class="todo-item {{ if .Completed }}completed{{ end }}">{{ .Name }}</li>
+            <li class="todo-item {{ if .Completed }}completed{{ end }}" data-id="{{ .Id }}">
+                <span class="todo-text">{{ .Name }}</span>
+                <button class="toggle-btn">{{ if .Completed }}Undo{{ else }}Done{{ end }}</button>
+            </li>
             {{ end }}
         </ul>
     </div>
 
     <script>
+    // Add new todo
     document.getElementById("todo-send").addEventListener("click", async () => {
-        const todoValue = document.getElementById("todo-input").value;
+        const todoInput = document.getElementById("todo-input");
+        const todoValue = todoInput.value.trim();
 
         if (!todoValue) return;
 
-        const res = await fetch("http://localhost:8081/todos", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-                todo: todoValue
-            })
-        });
+        try {
+            const res = await fetch("http://localhost:8081/todos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    todo: todoValue
+                })
+            });
 
-        if (res.ok) {
-            console.log("Todo sent!");
-        } else {
-            console.error("Failed to send todo");
+            if (res.ok) {
+                const data = await res.json();
+                console.log("Todo sent!", data);
+                
+                // Add the new todo to the list
+                const todoList = document.querySelector(".todo-list");
+                const newTodoItem = createTodoElement(data.todo.Id, data.todo.Name, data.todo.Completed);
+                todoList.appendChild(newTodoItem);
+                
+                // Clear the input
+                todoInput.value = "";
+            } else {
+                console.error("Failed to send todo");
+            }
+        } catch (error) {
+            console.error("Error sending todo:", error);
+        }
+    });
+
+    // Allow pressing Enter to submit
+    document.getElementById("todo-input").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            document.getElementById("todo-send").click();
+        }
+    });
+
+    // Helper function to create todo element
+    function createTodoElement(id, name, completed) {
+        const li = document.createElement("li");
+        li.className = `todo-item${completed ? ' completed' : ''}`;
+        li.setAttribute("data-id", id);
+        
+        const span = document.createElement("span");
+        span.className = "todo-text";
+        span.textContent = name;
+        
+        const button = document.createElement("button");
+        button.className = "toggle-btn";
+        button.textContent = completed ? "Undo" : "Done";
+        
+        li.appendChild(span);
+        li.appendChild(button);
+        
+        return li;
+    }
+
+    // Toggle todo completion
+    document.querySelector(".todo-list").addEventListener("click", async (e) => {
+        if (e.target.classList.contains("toggle-btn")) {
+            const todoItem = e.target.closest(".todo-item");
+            const todoId = parseInt(todoItem.getAttribute("data-id"));
+            const todoText = todoItem.querySelector(".todo-text").textContent;
+            const isCompleted = todoItem.classList.contains("completed");
+            
+            try {
+                const res = await fetch("http://localhost:8081/todos", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        id: todoId,
+                        name: todoText,
+                        completed: !isCompleted
+                    })
+                });
+
+                if (res.ok) {
+                    // Toggle the UI
+                    todoItem.classList.toggle("completed");
+                    e.target.textContent = todoItem.classList.contains("completed") ? "Undo" : "Done";
+                } else {
+                    console.error("Failed to update todo");
+                }
+            } catch (error) {
+                console.error("Error updating todo:", error);
+            }
+        }
+    });
+
+    // Inline editing
+    document.querySelector(".todo-list").addEventListener("click", (e) => {
+        if (e.target.classList.contains("todo-text") && !e.target.closest(".todo-item").dataset.editing) {
+            const span = e.target;
+            const todoItem = span.closest(".todo-item");
+            const originalText = span.textContent;
+            
+            // Mark as editing
+            todoItem.dataset.editing = "true";
+            
+            // Create input
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "todo-text-input";
+            input.value = originalText;
+            input.maxLength = 140;
+            
+            // Replace span with input
+            span.replaceWith(input);
+            input.focus();
+            input.select();
+            
+            // Handle saving
+            const saveEdit = async () => {
+                const newText = input.value.trim();
+                
+                if (newText && newText !== originalText) {
+                    const todoId = parseInt(todoItem.getAttribute("data-id"));
+                    const isCompleted = todoItem.classList.contains("completed");
+                    
+                    try {
+                        const res = await fetch("http://localhost:8081/todos", {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                id: todoId,
+                                name: newText,
+                                completed: isCompleted
+                            })
+                        });
+
+                        if (res.ok) {
+                            // Update the span with new text
+                            const newSpan = document.createElement("span");
+                            newSpan.className = "todo-text";
+                            newSpan.textContent = newText;
+                            input.replaceWith(newSpan);
+                        } else {
+                            console.error("Failed to update todo");
+                            cancelEdit();
+                        }
+                    } catch (error) {
+                        console.error("Error updating todo:", error);
+                        cancelEdit();
+                    }
+                } else {
+                    cancelEdit();
+                }
+                
+                delete todoItem.dataset.editing;
+            };
+            
+            // Handle canceling
+            const cancelEdit = () => {
+                const newSpan = document.createElement("span");
+                newSpan.className = "todo-text";
+                newSpan.textContent = originalText;
+                input.replaceWith(newSpan);
+                delete todoItem.dataset.editing;
+            };
+            
+            // Event listeners
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveEdit();
+                } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    cancelEdit();
+                }
+            });
+            
+            input.addEventListener("blur", () => {
+                // Small delay to allow other events to process
+                setTimeout(cancelEdit, 100);
+            });
         }
     });
     </script>

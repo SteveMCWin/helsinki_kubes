@@ -10,9 +10,14 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/stevemcwin/helsinki_kubes/todo_backend/data"
 	"github.com/gin-gonic/gin"
 )
+
+type TodoItem struct {
+	Id        int    `json:"id"`
+	Name      string `json:"name"`
+	Completed bool   `json:"completed"`
+}
 
 var volume_path = "/usr/src/app/files/"
 var image_name = "myimg.jpg"
@@ -93,7 +98,7 @@ func HandleGetHome() func(c *gin.Context) {
 		}
 		defer res.Body.Close()
 
-		var items []data.TodoItem
+		var items []TodoItem
 
 		err = json.NewDecoder(res.Body).Decode(&items)
 		if err != nil {

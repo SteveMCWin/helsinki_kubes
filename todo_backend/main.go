@@ -1,21 +1,20 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 
+	"todo_backend/data"
+
 	"github.com/gin-gonic/gin"
 )
 
-type TodoItem struct {
-	Name      string
-	Completed bool
-}
-
-var todoItems []TodoItem
-
 func main() {
+
+	var db data.Db
+	db.InitDb()
 
 	env_port := os.Getenv("BACKENDPORT")
 	if env_port == "" {
@@ -24,40 +23,68 @@ func main() {
 
 	router := gin.Default()
 
-	todoItems = []TodoItem{
-		TodoItem{Name: "Clean my room", Completed: true},
-		TodoItem{Name: "Learn k8s"},
-		TodoItem{Name: "Call mom"},
-	}
-
-	router.GET("/todos", HandleGetTodos())
-	router.POST("/todos", HandlePostTodos())
+	router.GET("/todos", HandleGetTodos(&db))
+	router.POST("/todos", HandlePostTodos(&db))
+	router.PUT("/todos", HandlePutTodos(&db))
 
 	router.Run(env_port)
 }
 
-func HandleGetTodos() func(c *gin.Context) {
+func HandleGetTodos(db *data.Db) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, todoItems)
+		todos, err := db.GetTodos()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+		c.JSON(http.StatusOK, todos)
 	}
 }
 
-func HandlePostTodos() func(c *gin.Context) {
+func HandlePostTodos(db *data.Db) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		todo := c.PostForm("todo")
 
 		if todo == "" {
-			c.JSON(400, gin.H{"error": "todo cannot be empty"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "todo cannot be empty"})
 			return
 		}
 
-		log.Println("Before adding: ", todoItems)
-		todoItems = append(todoItems, TodoItem{Name: todo})
-		log.Println("After adding:  ", todoItems)
+		todoItem := data.TodoItem{Name: todo, Completed: false}
+		err := db.InsertTodo(&todoItem)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
 
-		c.JSON(200, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
-			"todo":   todo,
+			"todo":   todoItem,
 		})
+	}
+}
+
+func HandlePutTodos(db *data.Db) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		decoder := json.NewDecoder(c.Request.Body)
+		var todo data.TodoItem
+		err := decoder.Decode(&todo)
+		if err != nil {
+			log.Println("Error decoding todo: ", err)
+			c.JSON(http.StatusInternalServerError, nil)
+			return
+		}
+
+		err = db.UpdateTodo(&todo)
+		if err != nil {
+			log.Println("Error decoding todo: ", err)
+			c.JSON(http.StatusInternalServerError, nil)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"todo": todo,
+		})
+
 	}
 }

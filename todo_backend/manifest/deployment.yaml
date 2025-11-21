@@ -23,3 +23,17 @@ spec:
           volumeMounts:
             - name: todo-storage
               mountPath: /usr/src/app/files
+          env:
+            - name: DB_HOST
+              value: postgres-svc
+            - name: DB_NAME
+              value: tododb
+            - name: DB_USER
+              value: tododb
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password

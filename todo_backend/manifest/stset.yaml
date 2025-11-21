@@ -22,15 +22,15 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: postgres-stset # has to match .spec.template.metadata.labels
-  serviceName: "postgres-stset"
+      app: postgres
+  serviceName: postgres-svc
   replicas: 1
   template:
     metadata:
       annotations:
-        kubectl.kubernetes.io/default-container:  postgres-stset
+        kubectl.kubernetes.io/default-container:  postgres
       labels:
-        app: postgres-stset # has to match .spec.selector.matchLabels
+        app: postgres
     spec:
       containers:
       - name: postgres
@@ -45,9 +45,9 @@ spec:
           - name: POSTGRES_HOST
             value: postgres-svc
           - name: POSTGRES_DB
-            value: pingpongdb
+            value: tododb
           - name: POSTGRES_USER
-            value: pingpong
+            value: tododb
           - name: POSTGRES_PORT
             value: "5432"
           - name: POSTGRES_PASSWORD
@@ -64,6 +64,6 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 1Mi
+          storage: 10Mi
 ---
 
