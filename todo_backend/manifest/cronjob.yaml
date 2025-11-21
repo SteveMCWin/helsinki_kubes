@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: addtask
+  namespace: project
+spec:
+  schedule: "52 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: curl
+            image: curlimages/curl
+            args: ['/bin/sh', '-c', 'curl --request POST --header "Content-Type: application/x-www-form-urlencoded" --data "todo=https://en.wikipedia.org/wiki/Special:Random" http://todo-backend-svc:6789/todos']
+          restartPolicy: OnFailure

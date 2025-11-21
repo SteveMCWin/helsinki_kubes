@@ -101,7 +101,16 @@ func (db *Db) UpdateTodo(todo *TodoItem) error {
 	statement := "UPDATE todos SET name = $2, completed = $3 where id = $1"
 	_, err := db.Data.Exec(statement, todo.Id, todo.Name, todo.Completed)
 	if err != nil {
-		log.Println("Error inserting new todo into database: ", err)
+		log.Println("Error updating todo: ", err)
+	}
+	return err
+}
+
+func (db *Db) DeleteTodo(id int) error {
+	statement := "DELETE FROM todos WHERE id = $1"
+	_, err := db.Data.Exec(statement, id)
+	if err != nil {
+		log.Println("Error deleting todo: ", err)
 	}
 	return err
 }
